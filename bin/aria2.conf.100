@@ -1,7 +1,7 @@
 file-allocation=none
 seed-time=0
-enable-dht=false
-enable-peer-exchange=false
+enable-dht=true
+enable-peer-exchange=true
 bt-enable-lpd=false
 max-overall-download-limit=0
 bt-max-peers=30
