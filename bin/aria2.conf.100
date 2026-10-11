@@ -1,0 +1,9 @@
+file-allocation=none
+seed-time=0
+enable-dht=false
+enable-peer-exchange=false
+bt-enable-lpd=false
+max-overall-download-limit=0
+bt-max-peers=30
+max-upload-limit=8M
+bt-tracker-interval=60

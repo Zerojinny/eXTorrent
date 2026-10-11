@@ -1,0 +1,9 @@
+- 7z.dll:
+         - The "GNU LGPL" as main license for most of the code
+         - The "GNU LGPL" with "unRAR license restriction" for some code
+         - The "BSD 3-clause License" for some code
+         - The "BSD 2-clause License" for some code
+         
+- 7z.exe, 7zS.sfx : GNU LGPL
+
+- aria2c.exe :  GNU GPL
