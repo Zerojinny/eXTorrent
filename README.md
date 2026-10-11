@@ -1,6 +1,5 @@
 # eXTorrent
 .torrent to .exe
-# eXTorrent
 
 [한국어](README.ko.md) | **English**
 
