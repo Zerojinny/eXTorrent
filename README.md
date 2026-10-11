@@ -61,7 +61,7 @@ Common to both: `file-allocation=none`, `seed-time=0` (no seeding after completi
 ### Required folder layout
 
 ```
-eXTorrent.exe (or eXTorrent.au3)
+eXTorrent.exe (compiled from eXTorrent_EN.au3)
 default.ini
 config.ini            (created when you save settings)
 bin\
@@ -71,8 +71,10 @@ bin\
  ├─ aria2.conf.100
  ├─ aria2.conf.1G
  ├─ getlinkspeed.bat
- └─ start.bat
+ └─ start.bat            (English version, shared by all builds)
 ```
+
+`eXTorrent_EN.au3` is the English-language source of the builder (all GUI text, log messages and dialogs are in English). The `bin\start.bat` it packages is also the English version, so the generated exe prints English messages as well.
 
 ### GUI mode
 
@@ -80,11 +82,11 @@ Run `eXTorrent.exe`, or drag a `.torrent` file onto it.
 
 1. Select the target `.torrent` file (drag & drop supported).
 2. Choose the folder where the generated exe will be saved.
-3. Edit `bin\start.bat` directly if needed, then press **start.bat 저장** (Save). You are asked to save on exit if there are unsaved changes.
+3. Edit `bin\start.bat` directly if needed, then press **Save start.bat**. When you close the window with unsaved changes, you are asked whether to save them (Yes / No / Cancel).
 4. Edit the SFX configuration (`config.txt`).
-5. Press **실행 파일 생성 시작** (Create executable). The output is `<torrent name>.exe` in the chosen folder.
+5. Press **Start Creating Executable**. The output is `<torrent name>.exe` in the chosen folder, and progress is shown in the work log.
 
-Extra buttons: **외부 INI 불러오기** (load an external INI) and **현재 설정을 INI에 저장** (save the current config text and save path to `config.ini`).
+Extra buttons: **Load External INI** (load the config text and save path from another INI file) and **Save Current Settings to INI** (save the current config text and save path to `config.ini`). The **Select File** and **Select Path** buttons open the file and folder pickers.
 
 ### Command-line mode
 
@@ -113,7 +115,6 @@ path=C:\Users\OWNER\Sync\eXTorrent3
 ## Notes and limitations
 
 * Windows only. The generated exe must be allowed to run elevated (UAC prompt appears).
-* DHT, PEX and LPD are disabled in both profiles, so peers are found via trackers only.
 * In `start.bat`, the "select in Explorer" step derives the item name from `tfile.txt` up to the first `.`; torrent names containing extra dots may not be selected correctly.
 * Torrent names with special batch characters (`&`, `%`, `^`, etc.) may need care.
 * Only use this for content you have the right to download and distribute.
