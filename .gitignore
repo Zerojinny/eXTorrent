@@ -1,0 +1,19 @@
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/
+
+# 빌드 결과물 (build.bat으로 다시 만든다. 배포는 GitHub Releases로)
+/build/
+/dist/
+/eXTorrent.exe
+/bin/*.exe
+*.tmp
+*.download
+
+# 개인 설정과 기록 (빌더가 실행 중에 만든다)
+/config.ini
+/history.txt
+
+# 개인 개발 도구 설정
+/.claude/
+/.mcp.json
+*.code-workspace

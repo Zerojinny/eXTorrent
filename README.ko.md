@@ -1,127 +1,178 @@
-# eXTorrent
+<p align="center">
+  <img src="extorrent_icon.svg" width="96" alt="eXTorrent">
+</p>
 
-**한국어** | [English](README.md)
+<h1 align="center">eXTorrent</h1>
 
-eXTorrent는 `.torrent` 파일을 **하나의 자체 압축 해제 `.exe` 파일**로 만들어 주는 도구입니다. 생성된 exe를 실행하는 사람은 토렌트 클라이언트가 필요 없습니다. exe가 `aria2c`를 풀고, PC의 네트워크 속도에 맞는 설정을 고른 뒤, 내용을 다운로드하고 스스로 정리합니다.
+<p align="center">
+  <b>.torrent 파일을 실행파일 하나로.</b><br>
+  받는 사람은 토렌트 클라이언트 없이 더블클릭만으로 내려받습니다.
+</p>
 
-## 동작 방식
+<p align="center">
+  <a href="https://github.com/Zerojinny/eXTorrent/releases/latest"><img src="https://img.shields.io/github/v/release/Zerojinny/eXTorrent?label=release" alt="Release"></a>
+  <img src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011%20x64-0078D4" alt="Windows 10 | 11 x64">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--2.0--or--later-blue" alt="GPL-2.0-or-later"></a>
+</p>
+
+<p align="center">
+  한국어 · <a href="README.md">English</a>
+</p>
+
+---
+
+<p align="center">
+  <img src="docs/images/builder-ko.png" width="640" alt="eXTorrent 빌더"><br><br>
+  <img src="docs/images/launcher-ko.png" width="400" alt="받는 사람 PC의 진행 창">
+</p>
+
+## 무엇을 하나요
+
+eXTorrent 빌더에 `.torrent` 파일을 넣으면 `<이름>.exe`가 만들어집니다.
+이 실행파일을 받은 사람은 설치 없이 실행만 하면 됩니다. 실행하면 진행 창이 뜨고, 정해 둔 폴더로 토렌트를 내려받습니다.
+
+- **설치 필요 없음**: 다운로드 엔진(aria2c 또는 aria2-next)이 실행파일 안에 들어 있습니다.
+- **이어받기**: 중간에 취소하거나 창을 닫아도 다시 실행하면 받은 부분부터 이어서 받습니다.
+- **완료 후 동작**: 받은 파일 중 하나를 실행하거나(예: 설치 프로그램), 받은 폴더를 탐색기로 엽니다.
+- **회선 속도별 설정**: 받는 PC의 링크 속도가 1Gbps 이상인지에 따라 aria2 설정을 자동으로 고릅니다.
+- **한국어 / English**: 빌더 화면과 진행 창 언어를 각각 고를 수 있고, `lang` 폴더에 파일을 추가해 언어를 늘릴 수 있습니다.
+- **백신 오탐 최소화**: 배치 파일·PowerShell·관리자 권한·패커를 쓰지 않습니다. [자세히](#백신-오탐을-줄이기-위한-원칙)
+
+## 시작하기
+
+### 1. 내려받기
+
+[Releases](https://github.com/Zerojinny/eXTorrent/releases/latest)에서 zip을 받아 원하는 폴더에 풉니다.
 
 ```
- .torrent 파일 ──► eXTorrent (AutoIt GUI / CLI) ──► <토렌트 이름>.exe
-                                                        │  (대상 PC에서 실행)
-                                                        ▼
-                      %temp%에 압축 해제 ─► start.bat ─► aria2c ─► SAVEPATH에 파일 저장
+eXTorrent.exe          빌더
+bin\launcher.exe       만든 실행파일의 바탕이 되는 런처
+bin\aria2.conf.100     aria2 설정 (1Gbps 미만)
+bin\aria2.conf.1G      aria2 설정 (1Gbps 이상)
+lang\ko.ini, en.ini    언어 파일
 ```
 
-생성되는 exe는 `7zS.sfx` + `config.txt` + `files.7z` 구조이며, 7z 안에는 다음 파일이 들어 있습니다.
+**요구 사항**: Windows 10 / 11 (64비트), .NET Framework 4.8 (Windows 10 1903 이상과 Windows 11에는 기본으로 들어 있습니다)
 
-| 파일 | 역할 |
-|---|---|
-| `<이름>.torrent` | 다운로드할 토렌트 |
-| `tfile.txt` | 토렌트 파일명 (`start.bat`이 읽음) |
-| `aria2c.exe` | 다운로드 엔진 (aria2) |
-| `aria2.conf.100` | 10/100 Mbps 또는 속도 불명일 때 쓰는 aria2 설정 |
-| `aria2.conf.1G` | 1 Gbps 이상일 때 쓰는 aria2 설정 |
-| `getlinkspeed.bat` | 활성 NIC의 링크 속도 감지 |
-| `start.bat` | 압축 해제 후 실행되는 메인 스크립트 |
+### 2. 실행파일 만들기
 
-## 생성된 exe의 동작 (`start.bat`)
+1. `eXTorrent.exe`를 실행하고 `.torrent` 파일을 창에 끌어다 놓습니다. 파일을 `eXTorrent.exe` 아이콘에 끌어다 놓아도 됩니다.
+2. 받는 PC에 적용할 설정을 정합니다.
 
-1. 관리자 권한이 아니면 **관리자 권한으로 재실행**합니다 (방화벽 규칙 때문에 필요).
-2. `tfile.txt`를 읽고 토렌트 파일 존재를 확인한 뒤 `SAVEPATH`(기본 `C:\Temp`)를 만듭니다.
-3. `getlinkspeed.bat`으로 링크 속도를 감지합니다 (WMIC 우선, 실패 시 인라인 PowerShell. 연결된 물리 어댑터 중 가장 빠른 속도 사용).
-4. 프로필 선택: **Gbps → `aria2.conf.1G`**, 그 외(100/10 Mbps, 감지 실패) → **`aria2.conf.100`**.
-5. `aria2c.exe`에 대한 임시 방화벽 인바운드/아웃바운드 규칙(`eXTorrent_Temp`)을 추가합니다.
-6. `aria2c.exe -T <토렌트> --dir=<SAVEPATH> --conf-path=<프로필>`을 실행합니다.
-7. 방화벽 규칙을 삭제합니다 (실패했을 때도 삭제).
-8. 성공 시: `RunFirst`가 비어 있으면 탐색기에서 다운로드된 항목을 선택해 열고, 지정되어 있으면 해당 스크립트를 후처리로 호출합니다.
+   | 항목 | 설명 |
+   |---|---|
+   | 다운로드 폴더 | **생성할 때 지정**: 정한 폴더로 바로 받습니다. 환경 변수를 쓸 수 있습니다(예: `%USERPROFILE%\Downloads`).<br>**실행할 때 선택**: 실행하면 폴더 선택 창이 뜹니다. |
+   | 완료 후 실행 | 토렌트에 들어 있는 파일 중 하나를 고르면 다 받은 뒤 실행합니다. |
+   | 완료 후 폴더 열기 | 실행할 파일이 없을 때 받은 파일을 탐색기로 보여 줍니다. |
+   | 창 제목 / 진행 창 언어 | 받는 사람이 보는 진행 창의 제목과 언어입니다. |
+   | 다운로드 엔진 | `aria2c` 또는 `aria2-next`. [아래](#다운로드-엔진) 참고 |
 
-`start.bat` 상단에서 수정할 수 있는 변수:
+3. **실행파일 만들기**를 누릅니다. 고른 엔진이 `bin`에 없으면 이때 GitHub에서 공식 바이너리를 내려받아 `bin`에 저장합니다.
 
-```bat
-set "SAVEPATH=C:\Temp"
-set "RunFirst="
-set "FWRULE=eXTorrent_Temp"
+**설정 저장**을 누르면 현재 설정이 `config.ini`에 저장되어 다음에도 그대로 쓰입니다.
+
+### 3. 명령줄로 만들기
+
+```
+eXTorrent.exe "토렌트 파일" "실행파일 저장 폴더" [/q]
 ```
 
-### aria2 프로필
+창 없이 바로 만듭니다. 다운로드 설정은 `config.ini`, aria2 설정은 `bin\aria2.conf.*`를 씁니다. 엔진이 없으면 내려받습니다.
+`/q`를 붙이면 결과 메시지 창도 띄우지 않습니다. 종료 코드는 `0` 성공, `1` 실패입니다.
 
-| 설정 | `aria2.conf.100` | `aria2.conf.1G` |
+## 다운로드 엔진
+
+| | aria2c | aria2-next |
 |---|---|---|
-| `bt-max-peers` | 30 | 100 |
-| `max-upload-limit` | 8M | 0 (무제한) |
-| `disk-cache` | (기본값) | 128M |
-| `bt-tracker-interval` | 60 | 30 |
+| 프로젝트 | [aria2/aria2](https://github.com/aria2/aria2) | [AnInsomniacy/aria2-next](https://github.com/AnInsomniacy/aria2-next) |
+| 특징 | 오래 쓰여 온 aria2 공식 빌드 | aria2와 같은 명령줄·설정을 쓰고, BitTorrent는 libtorrent-rasterbar 기반 |
+| 실행파일 크기 증가 | 약 6MB | 약 18MB |
+| 내려받을 때 확인 | 공식 릴리스 zip (HTTPS) | 공식 릴리스 exe + `checksums.sha256` 대조 |
 
-공통: `file-allocation=none`, `seed-time=0`(완료 후 시딩 안 함), `enable-dht=false`, `enable-peer-exchange=false`, `bt-enable-lpd=false`, `max-overall-download-limit=0`(무제한).
+- 두 엔진 모두 **다시 빌드하지 않은 공식 릴리스 바이너리**를 그대로 씁니다.
+- 엔진 파일은 빌더의 `bin` 폴더에 `aria2c.exe`, `aria2-next.exe`로 저장됩니다. 새 버전을 쓰려면 지우고 다시 만들면 됩니다.
+- 내려받기는 빌더에서만 합니다. 만든 실행파일은 실행할 때 인터넷에서 프로그램을 받지 않습니다.
 
-## 빌더 사용법 (`eXTorrent.au3`)
+## aria2 설정
 
-### 필요한 폴더 구조
+빌더의 **aria2 설정** 페이지에서 `bin\aria2.conf.100`과 `bin\aria2.conf.1G`를 편집합니다.
+받는 PC의 링크 속도(유선·무선 어댑터 중 가장 빠른 값)가 1Gbps 이상이면 `1G`, 아니면 `100` 설정을 씁니다.
+
+기본 설정에서 알아 둘 점:
+
+- `check-integrity=true`: 다시 실행했을 때 이미 받은 데이터를 검사하고 이어받습니다. 끄지 마세요.
+- `seed-time=0`: 다 받으면 시드하지 않고 바로 끝납니다. 받는 동안에는 BitTorrent 특성상 업로드가 일어납니다(`max-upload-limit`로 제한).
+- `enable-dht=true`, `enable-peer-exchange=true`: 트래커가 없거나 트래커가 응답하지 않아도 DHT와 피어 교환으로 피어를 찾습니다. 사설 트래커 토렌트만 쓴다면 `false`로 바꿔도 됩니다. `bt-enable-lpd`(같은 네트워크의 피어 찾기)는 꺼져 있습니다.
+
+## 받는 PC에서 일어나는 일
+
+1. 실행파일 끝에 붙은 데이터(토렌트, 설정, 엔진)를 읽고 CRC로 손상 여부를 확인합니다.
+2. `%LOCALAPPDATA%\eXTorrent\`에 엔진을 꺼냅니다. 같은 엔진이 이미 있으면 다시 쓰지 않습니다.
+3. 엔진을 창 없이 실행하고, 출력에서 진행률·속도·남은 시간을 읽어 진행 창에 보여 줍니다.
+4. 취소하면 엔진에 Ctrl+C를 보내 이어받기 정보를 저장한 뒤 끝냅니다(15초 안에 끝나지 않으면 강제 종료).
+5. 다 받으면 완료 후 실행 파일을 실행하거나 폴더를 엽니다.
+
+실행파일 종료 코드: `0` 완료 · `1` 오류 · `2` 사용자가 취소
+
+## 백신 오탐을 줄이기 위한 원칙
+
+예전 AutoIt + 7-Zip SFX 방식은 백신 오탐이 잦았습니다. eXTorrent는 다음 원칙으로 다시 만들었습니다.
+
+- 배치 파일, PowerShell, wmic, netsh(방화벽 변경), 관리자 권한 상승을 쓰지 않습니다. 필요한 일은 Win32 API로 직접 합니다.
+- `%TEMP%`에 풀지 않고 `%LOCALAPPDATA%\eXTorrent`를 씁니다.
+- UPX 같은 패커를 쓰지 않고, 덧붙이는 데이터도 압축하지 않습니다(고엔트로피 데이터는 패커로 의심받습니다).
+- 버전 정보 리소스와 매니페스트(`asInvoker`)를 넣습니다.
+- 받는 PC에서 프로그램을 내려받아 실행하지 않습니다.
+
+그래도 서명되지 않은 실행파일이라 Windows SmartScreen 경고가 나올 수 있습니다. 런처 코드 서명은 남은 과제입니다.
+
+## 직접 빌드하기
+
+**필요한 것**
+
+- Visual Studio 2022 이상(Build Tools도 가능)의 **C++ 데스크톱 개발** 도구와 **Windows SDK**
+  - SDK가 없으면 `'rc' is not recognized`로 실패합니다. `winget install Microsoft.WindowsSDK.10.0.26100`
+- C# 빌더는 Windows에 기본으로 들어 있는 `%WINDIR%\Microsoft.NET\Framework64\v4.0.30319\csc.exe`로 빌드합니다. .NET SDK는 필요 없습니다.
 
 ```
-eXTorrent.exe (또는 eXTorrent.au3)
-default.ini
-config.ini            (설정을 저장하면 생성됨)
-bin\
- ├─ 7z.exe
- ├─ 7zS.sfx
- ├─ aria2c.exe
- ├─ aria2.conf.100
- ├─ aria2.conf.1G
- ├─ getlinkspeed.bat
- └─ start.bat
+build.bat
 ```
 
-### GUI 모드
+결과물은 `bin\launcher.exe`(C, MSVC x64)와 `eXTorrent.exe`(C# 5 / WPF)입니다.
 
-`eXTorrent.exe`를 실행하거나 `.torrent` 파일을 exe 위로 드래그해서 실행합니다.
-
-1. 대상 `.torrent` 파일을 선택합니다 (드래그 앤 드롭 가능).
-2. 생성된 exe를 저장할 폴더를 선택합니다.
-3. 필요하면 `bin\start.bat`을 직접 편집하고 **start.bat 저장**을 누릅니다. 저장하지 않은 변경이 있으면 종료 시 저장 여부를 묻습니다.
-4. SFX 설정(`config.txt`)을 편집합니다.
-5. **실행 파일 생성 시작**을 누르면 선택한 폴더에 `<토렌트 이름>.exe`가 만들어집니다.
-
-보조 버튼: **외부 INI 불러오기**, **현재 설정을 INI에 저장** (config 내용과 저장 경로를 `config.ini`에 저장).
-
-### 명령줄 모드
+**소스 구조**
 
 ```
-eXTorrent.exe "C:\경로\파일.torrent" "D:\출력폴더" [/q]
+src/launcher/   런처 (C, Win32 API) — 받는 사람이 실행하는 부분
+src/builder/    빌더 (C# 5, WPF) — XAML은 실행 시 XamlReader로 읽음
+lang/           언어 파일 ([builder], [launcher] 섹션)
+bin/            aria2 설정, 빌드한 launcher.exe, 내려받은 엔진
 ```
 
-* 창 없이 바로 변환하며, 종료 코드는 `0`=성공, `1`=실패입니다.
-* `bin\start.bat`과 `config.ini`(없으면 `default.ini`)의 설정을 사용합니다.
-* `/q`를 붙이면 결과 메시지 창도 표시하지 않습니다.
+**실행파일 형식**
 
-## 설정 파일
-
-`default.ini` / `config.ini`:
-
-```ini
-[config]
-content=;!@Install@!UTF-8!\nTitle="eXTorrent"\nInstallPath="%temp%"\nRunProgram="start.bat"\n;!@InstallEnd@!
-[savepath]
-path=C:\Users\OWNER\Sync\eXTorrent3
+```
+[launcher.exe]
+[항목]* = [u16 이름 길이][이름 UTF-8][u32 데이터 길이][데이터]
+[푸터]  = "EXTR" [u32 항목 시작 오프셋] [u32 항목 전체 크기] [u32 항목 CRC32]   (리틀 엔디언)
 ```
 
-* `[config] content`는 7-Zip SFX 설정입니다 (`\n`은 줄바꿈). `%temp%`에 풀고 `start.bat`을 실행합니다.
-* `[savepath] path`는 빌더의 기본 출력 폴더입니다. **`OWNER`를 본인 경로로 바꾸세요.**
+항목: `<이름>.torrent`, `aria2.conf.100`, `aria2.conf.1G`, `settings.ini`, `lang.ini`, `engine.exe`
 
-## 참고 및 제한 사항
+## 언어 추가
 
-* Windows 전용입니다. 생성된 exe는 관리자 권한으로 실행되어야 합니다 (UAC 창이 표시됨).
-* `start.bat`의 "탐색기에서 선택" 단계는 `tfile.txt`에서 첫 번째 `.` 앞까지를 항목 이름으로 사용하므로, 이름에 점이 여러 개 있는 토렌트는 올바르게 선택되지 않을 수 있습니다.
-* 토렌트 이름에 배치 파일 특수문자(`&`, `%`, `^` 등)가 있으면 주의가 필요할 수 있습니다.
-* 다운로드 및 배포 권한이 있는 콘텐츠에만 사용하세요.
+`lang\en.ini`를 복사해 `lang\ja.ini`처럼 이름을 바꾸고 `[info] Name`과 값을 번역하면 빌더의 언어 선택에 자동으로 나타납니다.
+값에서 `\n`은 줄바꿈, `{0}` `{1}`은 실행할 때 채워지는 자리 표시자입니다.
+
+## 주의
+
+eXTorrent는 배포 권한이 있는 파일(직접 만든 자료, 오픈 라이선스 콘텐츠 등)을 전달하기 위한 도구입니다. 저작권을 침해하는 콘텐츠를 배포하는 데 쓰지 마세요.
 
 ## 라이선스
 
-이 프로젝트에는 다음 서드파티 바이너리가 포함됩니다.
+eXTorrent는 [GNU General Public License v2.0 이상](LICENSE)으로 배포합니다.
 
-* `7z.dll`: GNU LGPL (일부 코드는 unRAR 라이선스 제한, BSD 3-clause, BSD 2-clause)
-* `7z.exe`, `7zS.sfx`: GNU LGPL
-* `aria2c.exe`: GNU GPL
+만든 실행파일에는 다음 GPL 소프트웨어의 공식 바이너리가 들어갑니다. 만든 실행파일을 배포할 때는 GPL에 따라 아래 소스 위치를 함께 안내해 주세요.
 
-자세한 내용은 `license.txt`를 참고하세요.
+- [aria2](https://github.com/aria2/aria2) — GPL-2.0-or-later, Copyright © Tatsuhiro Tsujikawa
+- [aria2-next](https://github.com/AnInsomniacy/aria2-next) — GPL-2.0-or-later, Copyright © aria2-next contributors

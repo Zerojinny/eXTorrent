@@ -1,0 +1,35 @@
+// build.bat이 프로젝트 루트에서 rc를 실행하므로 경로는 루트 기준
+#include <windows.h>
+#include "resource.h"
+
+IDI_APP     ICON    "extorrent.ico"
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "src\\launcher\\launcher.manifest"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 3,0,0,0
+ PRODUCTVERSION 3,0,0,0
+ FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+ FILEFLAGS 0
+ FILEOS VOS_NT_WINDOWS32
+ FILETYPE VFT_APP
+ FILESUBTYPE VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "041204B0"
+        BEGIN
+            VALUE "CompanyName", "eXTorrent"
+            VALUE "FileDescription", "eXTorrent Downloader"
+            VALUE "FileVersion", "3.0.0.0"
+            VALUE "InternalName", "launcher"
+            VALUE "LegalCopyright", "Includes aria2 (GNU GPL v2)"
+            VALUE "OriginalFilename", "launcher.exe"
+            VALUE "ProductName", "eXTorrent"
+            VALUE "ProductVersion", "3.0.0.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x412, 1200
+    END
+END

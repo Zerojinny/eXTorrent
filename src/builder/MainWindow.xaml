@@ -1,0 +1,338 @@
+<!-- 빌더 메인 창. 이벤트는 MainWindow.cs에서 x:Name으로 찾아 연결한다 -->
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="eXTorrent" Width="1000" Height="760" MinWidth="860" MinHeight="600"
+        WindowStartupLocation="CenterScreen" AllowDrop="True" UseLayoutRounding="True"
+        Background="{DynamicResource WindowBrush}" Foreground="{DynamicResource TextBrush}"
+        FontFamily="{DynamicResource UiFont}" FontSize="13" TextOptions.TextFormattingMode="Display">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="232"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 사이드바 -->
+        <Grid Margin="10,18,8,14">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <StackPanel Orientation="Horizontal" Margin="12,0,0,24">
+                <Image x:Name="Logo" Width="32" Height="32" RenderOptions.BitmapScalingMode="HighQuality"/>
+                <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="eXTorrent" FontSize="16" FontWeight="SemiBold"/>
+                    <TextBlock Text="{DynamicResource L.app.tagline}" Style="{DynamicResource CaptionText}"/>
+                </StackPanel>
+            </StackPanel>
+            <StackPanel Grid.Row="1">
+                <RadioButton x:Name="NavBuild" GroupName="nav" Style="{DynamicResource NavItem}" IsChecked="True">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE7B8;" Style="{DynamicResource IconText}"/>
+                        <TextBlock Text="{DynamicResource L.nav.build}" Margin="14,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </RadioButton>
+                <RadioButton x:Name="NavAria2" GroupName="nav" Style="{DynamicResource NavItem}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE713;" Style="{DynamicResource IconText}"/>
+                        <TextBlock Text="{DynamicResource L.nav.aria2}" Margin="14,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </RadioButton>
+                <RadioButton x:Name="NavHistory" GroupName="nav" Style="{DynamicResource NavItem}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE81C;" Style="{DynamicResource IconText}"/>
+                        <TextBlock Text="{DynamicResource L.nav.history}" Margin="14,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </RadioButton>
+            </StackPanel>
+            <StackPanel Grid.Row="2">
+                <StackPanel Orientation="Horizontal" Margin="16,0,0,10">
+                    <TextBlock Text="&#xE774;" Style="{DynamicResource IconText}"/>
+                    <TextBlock Text="{DynamicResource L.nav.language}" Margin="14,0,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
+                <Border Style="{DynamicResource SegmentHost}" Margin="12,0,0,8">
+                    <WrapPanel x:Name="UiLangPanel"/>
+                </Border>
+                <Button x:Name="BtnTheme" Style="{DynamicResource SubtleButton}" HorizontalContentAlignment="Left" Padding="16,8">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock x:Name="ThemeIcon" Style="{DynamicResource IconText}"/>
+                        <TextBlock x:Name="ThemeText" Margin="14,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <TextBlock x:Name="VersionText" Style="{DynamicResource CaptionText}" Margin="16,6,0,0"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- 내용 -->
+        <Border Grid.Column="1" Background="{DynamicResource LayerBrush}" BorderBrush="{DynamicResource CardBorderBrush}"
+                BorderThickness="1,1,0,0" CornerRadius="8,0,0,0">
+            <Grid>
+                <!-- 만들기 -->
+                <ScrollViewer x:Name="PageBuild" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="36,30,36,30" MaxWidth="860">
+                        <Grid Margin="0,0,0,22">
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource L.build.title}" Style="{DynamicResource TitleText}"/>
+                                <TextBlock Text="{DynamicResource L.build.subtitle}"
+                                           Style="{DynamicResource CaptionText}" Margin="0,4,0,0"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                <Button x:Name="BtnLoadIni" Style="{DynamicResource SubtleButton}" ToolTip="{DynamicResource L.build.loadIni.tip}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE8E5;" Style="{DynamicResource IconText}" FontSize="14"/>
+                                        <TextBlock Text="{DynamicResource L.build.loadIni}" Margin="8,0,0,0"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button x:Name="BtnSaveIni" Style="{DynamicResource SubtleButton}" Margin="4,0,0,0" ToolTip="{DynamicResource L.build.saveIni.tip}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE74E;" Style="{DynamicResource IconText}" FontSize="14"/>
+                                        <TextBlock Text="{DynamicResource L.build.saveIni}" Margin="8,0,0,0"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- 토렌트 (끌어다 놓기) -->
+                        <Grid x:Name="DropZone" Margin="0,0,0,12" MinHeight="104" Background="Transparent" AllowDrop="True" Cursor="Hand">
+                            <Rectangle x:Name="DropBorder" RadiusX="8" RadiusY="8" StrokeThickness="1.5" StrokeDashArray="5 3"
+                                       Stroke="{DynamicResource DropStrokeBrush}" Fill="{DynamicResource CardBrush}"/>
+                            <StackPanel x:Name="DropEmpty" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
+                                <TextBlock Text="&#xE896;" Style="{DynamicResource IconText}" FontSize="26" HorizontalAlignment="Center"
+                                           Foreground="{DynamicResource AccentBrush}"/>
+                                <TextBlock Text="{DynamicResource L.drop.hint}" FontWeight="SemiBold"
+                                           HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                            </StackPanel>
+                            <Grid x:Name="DropFilled" Margin="20,16" Visibility="Collapsed">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="48" Height="48" CornerRadius="8" Background="{DynamicResource AccentSoftBrush}">
+                                    <TextBlock Text="&#xE7B8;" Style="{DynamicResource IconText}" FontSize="22" HorizontalAlignment="Center"
+                                               Foreground="{DynamicResource AccentBrush}"/>
+                                </Border>
+                                <StackPanel Grid.Column="1" Margin="16,0" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TorrentName" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock x:Name="TorrentMeta" Style="{DynamicResource CaptionText}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                                <Button x:Name="BtnChangeTorrent" Grid.Column="2" Content="{DynamicResource L.drop.change}" VerticalAlignment="Center" MinWidth="72"/>
+                            </Grid>
+                        </Grid>
+
+                        <!-- 다운로드 설정 -->
+                        <Border Style="{DynamicResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource L.dl.header}" Style="{DynamicResource SectionText}"/>
+                                <TextBlock Text="{DynamicResource L.dl.sub}" Style="{DynamicResource CaptionText}" Margin="0,2,0,16"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Text="{DynamicResource L.dl.folder}" Style="{DynamicResource LabelText}"/>
+                                    <Border Grid.Column="1" Grid.ColumnSpan="2" Style="{DynamicResource SegmentHost}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <RadioButton x:Name="RdoFixed" GroupName="savemode" Style="{DynamicResource Segment}" Content="{DynamicResource L.dl.fixed}"/>
+                                            <RadioButton x:Name="RdoAsk" GroupName="savemode" Style="{DynamicResource Segment}" Content="{DynamicResource L.dl.ask}"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <TextBlock x:Name="LblSavePath" Grid.Row="1" Style="{DynamicResource LabelText}" Margin="0,14,16,0"/>
+                                    <TextBox x:Name="TxtSavePath" Grid.Row="1" Grid.Column="1" Margin="0,14,0,0"
+                                             ToolTip="{DynamicResource L.dl.savePath.tip}"/>
+                                    <Button x:Name="BtnSavePath" Grid.Row="1" Grid.Column="2" Margin="8,14,0,0" Padding="9,5" ToolTip="{DynamicResource L.common.pickFolder}"
+                                            HorizontalAlignment="Left">
+                                        <TextBlock Text="&#xE838;" Style="{DynamicResource IconText}" FontSize="14"/>
+                                    </Button>
+                                    <TextBlock x:Name="SavePathHint" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"
+                                               Style="{DynamicResource CaptionText}" Margin="2,6,0,0" TextWrapping="Wrap"/>
+
+                                    <TextBlock Text="{DynamicResource L.dl.runAfter}" Grid.Row="3" Style="{DynamicResource LabelText}" Margin="0,18,16,0"/>
+                                    <TextBox x:Name="TxtRunAfter" Grid.Row="3" Grid.Column="1" Margin="0,18,0,0"/>
+                                    <Button x:Name="BtnRunAfter" Grid.Row="3" Grid.Column="2" Margin="8,18,0,0" ToolTip="{DynamicResource L.dl.runAfter.tip}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#xE8FD;" Style="{DynamicResource IconText}" FontSize="14"/>
+                                            <TextBlock Text="{DynamicResource L.dl.runAfter.pick}" Margin="8,0,0,0"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <TextBlock Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Style="{DynamicResource CaptionText}" Margin="2,6,0,0"
+                                               Text="{DynamicResource L.dl.runAfter.hint}"/>
+
+                                    <TextBlock Text="{DynamicResource L.dl.openFolder}" Grid.Row="5" Style="{DynamicResource LabelText}" Margin="0,18,16,0"/>
+                                    <CheckBox x:Name="ChkOpenFolder" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,18,0,0"
+                                              Style="{DynamicResource Switch}" Content="{DynamicResource L.dl.openFolder.desc}"/>
+
+                                    <TextBlock Text="{DynamicResource L.dl.title}" Grid.Row="6" Style="{DynamicResource LabelText}" Margin="0,18,16,0"/>
+                                    <TextBox x:Name="TxtTitle" Grid.Row="6" Grid.Column="1" Margin="0,18,0,0" Width="280" HorizontalAlignment="Left"/>
+
+                                    <TextBlock Text="{DynamicResource L.dl.lang}" Grid.Row="7" Style="{DynamicResource LabelText}" Margin="0,18,16,0"/>
+                                    <Border Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,18,0,0" Style="{DynamicResource SegmentHost}">
+                                        <WrapPanel x:Name="DlLangPanel"/>
+                                    </Border>
+
+                                    <TextBlock Text="{DynamicResource L.dl.engine}" Grid.Row="8" Style="{DynamicResource LabelText}" Margin="0,18,16,0"/>
+                                    <Border Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,18,0,0" Style="{DynamicResource SegmentHost}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <RadioButton x:Name="RdoEngineAria2c" GroupName="engine" Style="{DynamicResource Segment}" Content="aria2c"
+                                                         ToolTip="{DynamicResource L.dl.engine.aria2c.tip}"/>
+                                            <RadioButton x:Name="RdoEngineNext" GroupName="engine" Style="{DynamicResource Segment}" Content="aria2-next"
+                                                         ToolTip="{DynamicResource L.dl.engine.next.tip}"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <TextBlock x:Name="EngineHint" Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="2"
+                                               Style="{DynamicResource CaptionText}" Margin="2,6,0,0" TextWrapping="Wrap"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 출력 -->
+                        <Border Style="{DynamicResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource L.out.header}" Style="{DynamicResource SectionText}" Margin="0,0,0,14"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="190"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{DynamicResource L.out.dir}" Style="{DynamicResource LabelText}"/>
+                                    <TextBox x:Name="TxtOutDir" Grid.Column="1"/>
+                                    <Button x:Name="BtnOutDir" Grid.Column="2" Margin="8,0,0,0" Padding="9,5" ToolTip="{DynamicResource L.common.pickFolder}">
+                                        <TextBlock Text="&#xE838;" Style="{DynamicResource IconText}" FontSize="14"/>
+                                    </Button>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="ResultBar" Visibility="Collapsed" CornerRadius="6" Padding="14,8" Margin="0,0,16,0" BorderThickness="1"
+                                    BorderBrush="{DynamicResource CardBorderBrush}" VerticalAlignment="Center">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="ResultIcon" Style="{DynamicResource IconText}" Margin="0,0,12,0"/>
+                                    <TextBlock x:Name="ResultText" Grid.Column="1" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                    <Button x:Name="ResultOpen" Grid.Column="2" Style="{DynamicResource SubtleButton}" Margin="8,0,0,0" Content="{DynamicResource L.common.openFolder}"/>
+                                </Grid>
+                            </Border>
+                            <Button x:Name="BtnBuild" Grid.Column="1" Style="{DynamicResource AccentButton}" MinWidth="200" MinHeight="40"
+                                    FontSize="14" VerticalAlignment="Top">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE896;" Style="{DynamicResource IconText}" FontSize="15"/>
+                                    <TextBlock Text="{DynamicResource L.build.title}" Margin="10,0,0,0" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- aria2 설정 -->
+                <Grid x:Name="PageAria2" Margin="36,30,36,30" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource L.nav.aria2}" Style="{DynamicResource TitleText}"/>
+                        <TextBlock Text="{DynamicResource L.aria2.subtitle}"
+                                   Style="{DynamicResource CaptionText}" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Grid Grid.Row="1" Margin="0,22,0,12">
+                        <Border Style="{DynamicResource SegmentHost}">
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton x:Name="RdoConf100" GroupName="conf" Style="{DynamicResource Segment}" Content="{DynamicResource L.aria2.seg100}" IsChecked="True"/>
+                                <RadioButton x:Name="RdoConf1G" GroupName="conf" Style="{DynamicResource Segment}" Content="{DynamicResource L.aria2.seg1G}"/>
+                            </StackPanel>
+                        </Border>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <TextBlock x:Name="ConfDirty" Text="{DynamicResource L.aria2.dirty}" Style="{DynamicResource CaptionText}"
+                                       VerticalAlignment="Center" Margin="0,0,12,0" Visibility="Collapsed"/>
+                            <Button x:Name="BtnRevertConf" Content="{DynamicResource L.aria2.revert}" IsEnabled="False"/>
+                            <Button x:Name="BtnSaveConf" Style="{DynamicResource AccentButton}" Content="{DynamicResource L.btn.save}" MinWidth="88" Margin="8,0,0,0" IsEnabled="False"/>
+                        </StackPanel>
+                    </Grid>
+                    <TextBox x:Name="TxtConf" Grid.Row="2" AcceptsReturn="True" AcceptsTab="True" FontFamily="{DynamicResource MonoFont}"
+                             VerticalContentAlignment="Top" Padding="12,10" TextWrapping="NoWrap"
+                             HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
+                    <TextBlock x:Name="ConfPath" Grid.Row="3" Style="{DynamicResource CaptionText}" Margin="2,10,0,0"/>
+                </Grid>
+
+                <!-- 기록 -->
+                <Grid x:Name="PageHistory" Margin="36,30,36,30" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource L.nav.history}" Style="{DynamicResource TitleText}"/>
+                            <TextBlock Text="{DynamicResource L.history.subtitle}"
+                                       Style="{DynamicResource CaptionText}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Button x:Name="BtnClearHistory" Style="{DynamicResource SubtleButton}" HorizontalAlignment="Right" VerticalAlignment="Top">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE74D;" Style="{DynamicResource IconText}" FontSize="14"/>
+                                <TextBlock Text="{DynamicResource L.history.clear}" Margin="8,0,0,0"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                    <Grid Grid.Row="1" Margin="0,22,0,0">
+                        <TextBlock x:Name="HistoryEmpty" Text="{DynamicResource L.history.empty}" Style="{DynamicResource CaptionText}"
+                                   HorizontalAlignment="Center" Margin="0,48,0,0"/>
+                        <ListBox x:Name="HistoryList" ItemContainerStyle="{DynamicResource PlainItem}"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{DynamicResource Card}" Margin="0,0,4,8" Padding="18,12">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="&#xE7B8;" Style="{DynamicResource IconText}" FontSize="20"
+                                                       Foreground="{DynamicResource AccentBrush}"/>
+                                            <StackPanel Grid.Column="1" Margin="16,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding Caption}" Style="{DynamicResource CaptionText}" Margin="0,3,0,0"
+                                                           TextTrimming="CharacterEllipsis" ToolTip="{Binding ExePath}"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                                <Button Tag="open" Content="{DynamicResource L.common.openFolder}" IsEnabled="{Binding ExeExists}"/>
+                                                <Button Tag="rebuild" Content="{DynamicResource L.history.rebuild}" Margin="8,0,0,0" IsEnabled="{Binding TorrentExists}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

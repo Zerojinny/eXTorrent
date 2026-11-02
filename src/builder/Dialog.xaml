@@ -1,0 +1,29 @@
+<!-- 메시지 대화 상자. 버튼은 Dialogs.cs에서 넣는다 -->
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Width="460" SizeToContent="Height" ResizeMode="NoResize" ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner" UseLayoutRounding="True"
+        Background="{DynamicResource WindowBrush}" Foreground="{DynamicResource TextBrush}"
+        FontFamily="{DynamicResource UiFont}" FontSize="13" TextOptions.TextFormattingMode="Display">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid Margin="24,22,24,24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="Icon" Style="{DynamicResource IconText}" FontSize="24" VerticalAlignment="Top" Margin="0,0,16,0"/>
+            <StackPanel Grid.Column="1">
+                <TextBlock x:Name="Heading" Style="{DynamicResource SectionText}" FontSize="16" TextWrapping="Wrap"/>
+                <TextBlock x:Name="Body" Margin="0,8,0,0" TextWrapping="Wrap" Foreground="{DynamicResource SubTextBrush}"/>
+            </StackPanel>
+        </Grid>
+        <Border Grid.Row="1" Background="{DynamicResource FooterBrush}" BorderBrush="{DynamicResource CardBorderBrush}"
+                BorderThickness="0,1,0,0" Padding="24,16">
+            <StackPanel x:Name="Buttons" Orientation="Horizontal" HorizontalAlignment="Right"/>
+        </Border>
+    </Grid>
+</Window>
