@@ -63,7 +63,7 @@ namespace EXTorrent
             ok &= WritePrivateProfileString("download", "SavePath", Download.SavePath, iniPath);
             ok &= WritePrivateProfileString("download", "AskSavePath", Download.AskSavePath ? "1" : "0", iniPath);
             ok &= WritePrivateProfileString("download", "Title", Download.Title, iniPath);
-            ok &= WritePrivateProfileString("download", "RunAfter", Download.RunAfter, iniPath);
+            ok &= WritePrivateProfileString("download", "RunAfter", KeepQuotes(Download.RunAfter), iniPath);
             ok &= WritePrivateProfileString("download", "OpenFolder", Download.OpenFolder ? "1" : "0", iniPath);
             ok &= WritePrivateProfileString("download", "Language", Download.Language, iniPath);
             ok &= WritePrivateProfileString("download", "Engine", Engines.Normalize(Download.Engine), iniPath);
@@ -109,6 +109,13 @@ namespace EXTorrent
             var c = Load(iniPath, dir);
             c.OutputDir = dir;
             return c.Save(iniPath);
+        }
+
+        // GetPrivateProfileString은 값이 따옴표로 시작하고 끝나면 바깥 한 쌍을 벗기므로
+        // ("경로" "인수" 같은 완료 후 실행 값) 저장할 때 한 겹 더 감싼다
+        static string KeepQuotes(string v)
+        {
+            return v != null && v.Length >= 2 && v[0] == '"' && v[v.Length - 1] == '"' ? "\"" + v + "\"" : v;
         }
 
         // 키가 없으면 null

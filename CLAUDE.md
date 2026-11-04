@@ -39,7 +39,8 @@ build.bat
 형식을 바꾸면 `src/builder/Packager.cs`와 `src/launcher/launcher.c`(LoadPayload)를 함께 고친다.
 **압축하지 않는다**(고엔트로피 덧붙임 데이터는 패커로 의심받음).
 
-`settings.ini` 키: `Engine`(`aria2c` / `aria2-next`), `SavePath`, `AskSavePath`(1이면 실행 시 폴더 선택 창, SavePath는 시작 위치), `Title`, `RunAfter`(다운로드 폴더 기준 상대 경로 가능), `OpenFolder`.
+`settings.ini` 키: `Engine`(`aria2c` / `aria2-next`), `SavePath`, `AskSavePath`(1이면 실행 시 폴더 선택 창, SavePath는 시작 위치), `Title`, `RunAfter`(다운로드 폴더 기준 상대 경로 가능, 뒤에 인수 가능: `"경로" 인수` 또는 `경로 인수`. 따옴표가 없으면 공백마다 앞부분이 파일인지 확인), `OpenFolder`.
+완료 후 실행은 `ShellExecuteEx`로 하므로 관리자 권한 exe는 Windows가 UAC를 띄운다(런처는 권한을 올리지 않음). .bat 안에서 실행하면 UAC가 뜨지 않아 오류 740으로 실패하므로 exe를 직접 지정하게 안내한다. 종료 코드가 0이 아니면 진행 창에 경고를 표시한다.
 
 ## 런처 동작 (`src/launcher/launcher.c`)
 

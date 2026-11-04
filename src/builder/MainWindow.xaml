@@ -171,7 +171,7 @@
                                         </StackPanel>
                                     </Button>
                                     <TextBlock Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Style="{DynamicResource CaptionText}" Margin="2,6,0,0"
-                                               Text="{DynamicResource L.dl.runAfter.hint}"/>
+                                               TextWrapping="Wrap" Text="{DynamicResource L.dl.runAfter.hint}"/>
 
                                     <TextBlock Text="{DynamicResource L.dl.openFolder}" Grid.Row="5" Style="{DynamicResource LabelText}" Margin="0,18,16,0"/>
                                     <CheckBox x:Name="ChkOpenFolder" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,18,0,0"

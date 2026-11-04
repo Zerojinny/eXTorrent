@@ -17,8 +17,8 @@ using System.Windows;
 [assembly: AssemblyDescription("eXTorrent Builder")]
 [assembly: AssemblyCompany("eXTorrent")]
 [assembly: AssemblyProduct("eXTorrent")]
-[assembly: AssemblyVersion("3.1.0.0")]
-[assembly: AssemblyFileVersion("3.1.0.0")]
+[assembly: AssemblyVersion("3.2.0.0")]
+[assembly: AssemblyFileVersion("3.2.0.0")]
 // 4.x 최신 동작(고해상도 화면 대응 등)을 쓰도록 대상 프레임워크를 밝힌다
 [assembly: TargetFramework(".NETFramework,Version=v4.8", FrameworkDisplayName = ".NET Framework 4.8")]
 

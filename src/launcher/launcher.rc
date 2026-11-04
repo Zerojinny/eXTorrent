@@ -6,8 +6,8 @@ IDI_APP     ICON    "extorrent.ico"
 CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "src\\launcher\\launcher.manifest"
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,0
- PRODUCTVERSION 3,0,0,0
+ FILEVERSION 3,2,0,0
+ PRODUCTVERSION 3,2,0,0
  FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
  FILEFLAGS 0
  FILEOS VOS_NT_WINDOWS32
@@ -20,12 +20,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "eXTorrent"
             VALUE "FileDescription", "eXTorrent Downloader"
-            VALUE "FileVersion", "3.0.0.0"
+            VALUE "FileVersion", "3.2.0.0"
             VALUE "InternalName", "launcher"
             VALUE "LegalCopyright", "Includes aria2 (GNU GPL v2)"
             VALUE "OriginalFilename", "launcher.exe"
             VALUE "ProductName", "eXTorrent"
-            VALUE "ProductVersion", "3.0.0.0"
+            VALUE "ProductVersion", "3.2.0.0"
         END
     END
     BLOCK "VarFileInfo"

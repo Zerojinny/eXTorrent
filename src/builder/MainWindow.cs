@@ -384,7 +384,8 @@ namespace EXTorrent
                 return;
             }
             string picked = FilePicker.Pick(W, torrent.Files, txtRunAfter.Text.Trim());
-            if (picked != null) txtRunAfter.Text = picked;
+            // 뒤에 인수를 붙일 수 있으므로 공백이 있는 경로는 따옴표로 감싼다 (런처 SplitRunAfter)
+            if (picked != null) txtRunAfter.Text = picked.IndexOf(' ') >= 0 ? "\"" + picked + "\"" : picked;
         }
 
         void SaveIni()

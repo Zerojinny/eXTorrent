@@ -144,6 +144,12 @@ static BOOL IsDir(const wchar_t *path)
     return a != INVALID_FILE_ATTRIBUTES && (a & FILE_ATTRIBUTE_DIRECTORY);
 }
 
+static BOOL IsFile(const wchar_t *path)
+{
+    DWORD a = GetFileAttributesW(path);
+    return a != INVALID_FILE_ATTRIBUTES && !(a & FILE_ATTRIBUTE_DIRECTORY);
+}
+
 static BOOL WriteAll(const wchar_t *path, const void *data, DWORD size)
 {
     DWORD written;
@@ -758,19 +764,54 @@ static void ReadOutput(HANDLE rd)
 
 // --- 7. 작업 스레드 ---
 
-// 완료 후 실행 (상대 경로는 다운로드 폴더 기준). 끝날 때까지 기다린다. 문제가 있으면 note에 기록
+// 완료 후 실행 경로를 전체 경로로 (상대 경로는 다운로드 폴더 기준)
+static void RunAfterPath(const wchar_t *p, wchar_t *out, DWORD cap)
+{
+    wchar_t joined[PATH_CAP];
+    if ((p[0] && p[1] == L':') || (p[0] == L'\\' && p[1] == L'\\'))
+        wcscpy_s(joined, PATH_CAP, p);
+    else
+        JoinPath(joined, PATH_CAP, g_savePath, p);
+    if (!GetFullPathNameW(joined, cap, out, NULL)) wcscpy_s(out, cap, joined);
+}
+
+// 완료 후 실행 값을 경로와 인수로 나눈다: "경로" 인수 / 경로 인수 / 경로
+// 따옴표가 없으면 공백마다 앞부분을 경로로 보고 파일이 있는 첫 경우를 쓴다 (CreateProcess와 같은 방식).
+// 맞는 파일이 없으면 전체를 경로로 본다. 인수는 value 안을 가리킨다
+static const wchar_t *SplitRunAfter(wchar_t *value, wchar_t *path, DWORD cap)
+{
+    wchar_t *p, *end;
+    if (value[0] == L'"' && (end = wcschr(value + 1, L'"')) != NULL) {
+        *end = 0;
+        RunAfterPath(value + 1, path, cap);
+        for (p = end + 1; *p == L' '; p++) ;
+        return p;
+    }
+    for (p = wcschr(value, L' '); p; p = wcschr(p + 1, L' ')) {
+        *p = 0;
+        RunAfterPath(value, path, cap);
+        *p = L' ';
+        if (IsFile(path)) {
+            for (p++; *p == L' '; p++) ;
+            return p;
+        }
+    }
+    RunAfterPath(value, path, cap);
+    return L"";
+}
+
+// 완료 후 실행. 끝날 때까지 기다린다. 문제가 있으면 note에 기록
+// ShellExecuteEx로 실행하므로 관리자 권한이 필요한 exe는 Windows가 UAC 창을 띄운다 (런처는 권한을 올리지 않는다)
 static void RunAfter(wchar_t *note, size_t noteCap)
 {
-    wchar_t exp[PATH_CAP], joined[PATH_CAP], path[PATH_CAP], dir[PATH_CAP], msg[PATH_CAP + 100], num[16], *slash;
+    wchar_t exp[PATH_CAP], path[PATH_CAP], dir[PATH_CAP], msg[PATH_CAP + 100], shown[PATH_CAP], num[16], *slash;
+    const wchar_t *args;
+    DWORD code, err;
     SHELLEXECUTEINFOW sei = { sizeof sei };
     if (!ExpandEnvironmentStringsW(g_runAfter, exp, PATH_CAP)) wcscpy_s(exp, PATH_CAP, g_runAfter);
-    if ((exp[0] && exp[1] == L':') || (exp[0] == L'\\' && exp[1] == L'\\'))
-        wcscpy_s(joined, PATH_CAP, exp);
-    else
-        JoinPath(joined, PATH_CAP, g_savePath, exp);
-    if (!GetFullPathNameW(joined, PATH_CAP, path, NULL)) wcscpy_s(path, PATH_CAP, joined);
+    args = SplitRunAfter(exp, path, PATH_CAP);
 
-    if (GetFileAttributesW(path) == INVALID_FILE_ATTRIBUTES) {
+    if (!IsFile(path)) {
         Fmt(note, noteCap, T(L"runafter_missing", L"완료 후 실행할 파일이 없어 건너뛰었습니다: {0}"), 1, path);
         Fmt(msg, _countof(msg), T(L"log_warning", L"[경고] {0}"), 1, note);
         Log(L"%s", msg);
@@ -781,23 +822,36 @@ static void RunAfter(wchar_t *note, size_t noteCap)
     if (slash) *slash = 0;
 
     SetPhase(PH_RUNAFTER, wcsrchr(path, L'\\') ? wcsrchr(path, L'\\') + 1 : path);
-    Fmt(msg, _countof(msg), T(L"runafter_log", L"완료 후 실행: {0}"), 1, path);
+    swprintf_s(shown, PATH_CAP, args[0] ? L"%s %s" : L"%s", path, args);
+    Fmt(msg, _countof(msg), T(L"runafter_log", L"완료 후 실행: {0}"), 1, shown);
     Log(L"%s", msg);
     sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NOASYNC;
     sei.hwnd = g_wnd;
     sei.lpVerb = L"open";
     sei.lpFile = path;
+    sei.lpParameters = args[0] ? args : NULL;
     sei.lpDirectory = dir;
     sei.nShow = SW_SHOWNORMAL;
     if (!ShellExecuteExW(&sei)) {
-        swprintf_s(num, 16, L"%lu", GetLastError());
-        Fmt(note, noteCap, T(L"runafter_fail", L"완료 후 실행에 실패했습니다 (오류 {0}): {1}"), 2, num, path);
+        err = GetLastError();
+        swprintf_s(num, 16, L"%lu", err);
+        if (err == ERROR_CANCELLED) // UAC 창에서 '아니요'
+            Fmt(note, noteCap, T(L"runafter_cancelled", L"권한 요청이 거부되어 완료 후 실행을 하지 않았습니다: {0}"), 1, path);
+        else
+            Fmt(note, noteCap, T(L"runafter_fail", L"완료 후 실행에 실패했습니다 (오류 {0}): {1}"), 2, num, path);
         Fmt(msg, _countof(msg), T(L"log_warning", L"[경고] {0}"), 1, note);
         Log(L"%s", msg);
         return;
     }
     if (sei.hProcess) {
         WaitForSingleObject(sei.hProcess, INFINITE);
+        // 0이 아닌 종료 코드는 경고로 알린다 (배치 안의 명령이 실패해 창이 바로 닫힌 경우 등)
+        if (GetExitCodeProcess(sei.hProcess, &code) && code != 0) {
+            swprintf_s(num, 16, L"%lu", code);
+            Fmt(note, noteCap, T(L"runafter_exit", L"완료 후 실행한 프로그램이 종료 코드 {0}로 끝났습니다: {1}"), 2, num, path);
+            Fmt(msg, _countof(msg), T(L"log_warning", L"[경고] {0}"), 1, note);
+            Log(L"%s", msg);
+        }
         CloseHandle(sei.hProcess);
     }
 }

@@ -62,7 +62,7 @@ lang\ko.ini, en.ini    language files
    | Setting | Description |
    |---|---|
    | Download folder | **Set now**: download straight into this folder. Environment variables work (e.g. `%USERPROFILE%\Downloads`).<br>**Ask when run**: a folder picker opens when the executable runs. |
-   | Run when done | Pick a file from the torrent to run after the download completes. |
+   | Run when done | Pick a file from the torrent to run after the download completes. Arguments may follow (e.g. `R2024a\setup.exe -inputFile "installer_input.txt"`).<br>For installers that need administrator rights, point to the exe directly rather than a `.bat`, so that Windows shows the UAC prompt. A non-zero exit code is shown as a warning in the progress window. |
    | Open folder when done | Shows the downloaded files in Explorer if nothing is run. |
    | Window title / Progress window language | Title and language of the window the recipient sees. |
    | Download engine | `aria2c` or `aria2-next`. See [below](#download-engines). |
